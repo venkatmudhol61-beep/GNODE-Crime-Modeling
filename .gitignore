@@ -1,0 +1,33 @@
+# Virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# VS Code settings
+.vscode/
+
+data/raw/
+data/processed
+
+# Python
+__pycache__/
+*.pyc
+
+*.egg-info/
+
+# Generated data / model artifacts (regenerate via scripts, don't commit)
+data/processed/*.pt
+data/processed/*.csv
+data/processed/*.npy
+data/processed/*.png
+
+# Raw data (often large, and sometimes licensing-restricted — check the
+# Chicago Open Data terms before deciding whether to commit these)
+data/raw/*.csv
+
+# OS/editor junk
+.DS_Store
+.vscode/
