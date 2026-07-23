@@ -26,7 +26,7 @@ np.fill_diagonal(A, 0.0)
 A = A / (N - 1)
 
 # Save
-np.save("data/processed/adjacencyfc.npy", A)   # ✅ fc not adjacency.npy
+np.save("data/processed/adjacencyfc_beat.npy", A)   # ✅ fc not adjacency.npy
 
 print("Saved adjacency with shape:", A.shape)   # (274, 274)
 print("Max value:", A.max())                    # 0.003663

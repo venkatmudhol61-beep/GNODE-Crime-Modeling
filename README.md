@@ -52,8 +52,8 @@ different datasets.
 ## 3. Run preprocessing
 
 ```bash
-python preprocess_data.py --resolution beat
-python preprocess_data.py --resolution district
+python src/beat_data/preprocess_crime.py --resolution beat
+python src/district_data/preprocess_crime.py --resolution district
 ```
 
 ## 4. Output files

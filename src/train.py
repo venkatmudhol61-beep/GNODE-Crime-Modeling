@@ -87,12 +87,12 @@ RESOLUTION_CONFIG = {
 
 # Per-variant hyperparameters, matching what your pasted scripts used.
 VARIANT_HPARAMS = {
-    "fc":        dict(district=dict(lr=1e-4, grad_clip=0.5, patience=20, sched_patience=10),
-                       beat=    dict(lr=1e-4, grad_clip=0.5, patience=20, sched_patience=10)),
+    "fc":        dict(district=dict(lr=5e-4, grad_clip=1.0, patience=20, sched_patience=10),
+                       beat=    dict(lr=5e-4, grad_clip=1.0, patience=20, sched_patience=10)),
     "spatial":   dict(district=dict(lr=5e-4, grad_clip=1.0, patience=20, sched_patience=10),
-                       beat=    dict(lr=1e-4, grad_clip=0.5, patience=20, sched_patience=10)),
+                       beat=    dict(lr=5e-4, grad_clip=1.0, patience=20, sched_patience=10)),
     "attention": dict(district=dict(lr=5e-4, grad_clip=1.0, patience=20, sched_patience=10),
-                       beat=    dict(lr=1e-4, grad_clip=0.5, patience=20, sched_patience=10)),
+                       beat=    dict(lr=5e-4, grad_clip=1.0, patience=20, sched_patience=10)),
     "latent":    dict(district=dict(lr=5e-4, lr_l=5e-3, grad_clip=1.0, patience=20, sched_patience=10),
                        beat=    dict(lr=5e-4, lr_l=5e-3, grad_clip=1.0, patience=20, sched_patience=10)),
 }
