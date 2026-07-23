@@ -89,7 +89,7 @@ the normalized `[0,1]` scale.
 Run the training script:
 
 ```bash
-python train.py
+python src/train.py
 ```
 
 This trains the model using the preprocessed data and saves the trained model and logs.
