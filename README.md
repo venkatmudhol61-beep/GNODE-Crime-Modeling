@@ -52,8 +52,8 @@ different datasets.
 ## 3. Run preprocessing
 
 ```bash
-python src/beat_data/preprocess_crime.py --resolution beat
-python src/district_data/preprocess_crime.py --resolution district
+python src/beat_data/preprocess_crime.py 
+python src/district_data/preprocess_crime.py 
 ```
 
 ## 4. Output files
@@ -62,10 +62,10 @@ Each run writes the following to `data/processed/`:
 
 | File | Description |
 |---|---|
-| `chicago_{res}_crime_timeseries.csv` | Columns: `region_id, month, C` |
-| `chicago_{res}_arrest_timeseries.csv` | Columns: `region_id, month, L` |
-| `chicago_{res}_adjacency_spatial.npy` | Sparse geographic adjacency, shape (N, N) |
-| `chicago_{res}_adjacencyfc.npy` | Dense fully-connected adjacency, shape (N, N) |
+| `crime_{res}_timeseries.csv` | Columns: `region_id, month, C` |
+| `arrest_{res}_timeseries.csv` | Columns: `region_id, month, L` |
+| `adjacency_{res}.npy` | Sparse geographic adjacency, shape (N, N) |
+| `adjacencyfc.npy` | Dense fully-connected adjacency, shape (N, N) |
 | `chicago_{res}_graph_order.csv` | Ordered list of `region_id`s matching adjacency rows/columns |
 
 where `{res}` is `beats` (N=274) or `districts` (N=24).
@@ -83,6 +83,16 @@ Months are split chronologically for all downstream training:
 The historical-maximum normalization in step 2 uses **training months
 only**, so no information from the validation or test period leaks into
 the normalized `[0,1]` scale.
+
+## 6. Training
+
+Run the training script:
+
+```bash
+python train.py
+```
+
+This trains the model using the preprocessed data and saves the trained model and logs.
 
 ## Notes / things to verify against your data
 
