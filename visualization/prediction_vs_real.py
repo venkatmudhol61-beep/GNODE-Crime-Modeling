@@ -25,7 +25,7 @@ real["month"] = pd.to_datetime(real["month"])
 # ======================
 # Load GNODE predictions
 # ======================
-gnode = pd.read_csv("data/processed/attention_gnode_predictions.csv")
+gnode = pd.read_csv("data/processed/district_spatial_predictions.csv")
 gnode["month"] = pd.to_datetime(gnode["month"])
 
 # Ensure non-negative predictions
@@ -82,7 +82,7 @@ ax.plot(
 )
 ax.plot(
     merged["month"], merged["C_gnode"],
-    label="FC GN-ODE Prediction",
+    label="Spatial GN-ODE Prediction",
     linewidth=2,
     color="darkorange",
 )
@@ -101,7 +101,7 @@ ax.axvline(
     label=f"Test Start ({test_start.date()})",
 )
 
-ax.set_title(f"Spatial attention GN-ODE vs Real Crime — District {district_id}", fontsize=14)
+ax.set_title(f"Spatial GN-ODE vs Real Crime — District {district_id}", fontsize=14)
 ax.set_ylabel("Crime Intensity (Normalised)")
 ax.set_xlabel("Time")
 ax.legend()

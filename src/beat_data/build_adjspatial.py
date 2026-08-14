@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import haversine_distances
+import os
 
 # =========================
 # SETTINGS
@@ -9,8 +10,9 @@ CRIME_FILE = "data/raw/crimes.csv"
 ORDER_FILE = "data/processed/graph_beats_order.csv"
 OUT_FILE   = "data/processed/adjacency_beat.npy"
 
-DIST_THRESHOLD_KM = 6   # good starting point
-K = 4   # number of nearest neighbors (recommended: 5–10)
+DIST_THRESHOLD_KM = 6   # manuscript Eq. (2) / Section V-A
+                         # sensitivity range tested: {4, 6, 8, 10} km
+
 # =========================
 # 1. Load graph beat order
 # =========================
@@ -20,7 +22,6 @@ graph_beats = (
     .astype(int)
     .tolist()
 )
-
 N = len(graph_beats)
 print("Number of beats (graph):", N)   # should be 274
 
@@ -28,13 +29,9 @@ print("Number of beats (graph):", N)   # should be 274
 # 2. Load raw crime data (WITH coords)
 # =========================
 df = pd.read_csv(CRIME_FILE)
-
 df = df.dropna(subset=["Latitude", "Longitude", "Beat"])
 df["Beat"] = df["Beat"].astype(int)
-
-# ✅ Filter strictly to graph beats
 df = df[df["Beat"].isin(graph_beats)]
-
 print("Unique beats after filter:", df["Beat"].nunique())
 
 # =========================
@@ -45,68 +42,67 @@ centroids = (
     .mean()
     .reindex(graph_beats)   # enforce order
 )
-
 coords = centroids.values
-
 if coords.shape[0] != N:
     raise RuntimeError("Centroid mismatch!")
 
 # =========================
-# 4. Compute distance matrix
+# 4. Compute Haversine distance matrix (manuscript Eq. 1)
 # =========================
 coords_rad = np.radians(coords)
-dist_matrix = haversine_distances(coords_rad) * 6371  # km
+dist_matrix = haversine_distances(coords_rad) * 6371  # Earth radius km
 
 # =========================
-# 5. Build KNN adjacency
+# 5. Build threshold adjacency (manuscript Eq. 2)
 # =========================
-A = np.zeros((N, N), dtype=np.float32)
+print("Building threshold adjacency...")
+A = (dist_matrix < DIST_THRESHOLD_KM).astype(np.float32)
 
-for i in range(N):
-    # Get K nearest neighbors (excluding itself)
-    idx = np.argsort(dist_matrix[i])[1:K+1]
-    A[i, idx] = 1
+# Remove self-loops (A_ii = 0, per manuscript)
+np.fill_diagonal(A, 0)
 
-# Symmetrize
+# Symmetric by construction (Haversine distance is symmetric)
 A = np.maximum(A, A.T)
 
 # =========================
-# 6. Symmetric normalization (GNN standard)
+# 6. Symmetric normalization  W = D^{-1/2} A D^{-1/2}  (manuscript Eq. 4)
 # =========================
 degree = A.sum(axis=1)
 degree_inv_sqrt = np.where(degree > 0, degree ** -0.5, 0.0)
-
 D_inv_sqrt = np.diag(degree_inv_sqrt)
-A = D_inv_sqrt @ A @ D_inv_sqrt
+A_norm = D_inv_sqrt @ A @ D_inv_sqrt
 
 # =========================
 # 7. Save
 # =========================
-np.save(OUT_FILE, A)
+os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
+np.save(OUT_FILE, A_norm)
 
 # =========================
 # 8. Diagnostics
 # =========================
 print("\n===== GRAPH STATS =====")
-print("Shape:", A.shape)
-print("Max value:", A.max())
-print("Min value:", A.min())
+print("Shape:", A_norm.shape)
+print("Max value:", A_norm.max())
+print("Min value:", A_norm.min())
 
-neighbors = (A > 0).sum(axis=1)
+neighbors = (A > 0).sum(axis=1)   # raw (pre-normalisation) neighbour counts
 print("Average neighbors:", neighbors.mean())
 print("Min neighbors:", neighbors.min())
 print("Max neighbors:", neighbors.max())
-
-print("Is symmetric:", np.allclose(A, A.T, atol=1e-6))
+print("Is symmetric:", np.allclose(A_norm, A_norm.T, atol=1e-6))
 
 # =========================
-# 9. Connectivity check
+# 9. Connectivity check (manuscript requires every unit to have ≥1 neighbour)
 # =========================
 isolated = neighbors == 0
-
 if isolated.any():
-    print("⚠ WARNING: isolated nodes found")
+    isolated_beats = [graph_beats[i] for i in np.where(isolated)[0]]
+    print(f"\n⚠ WARNING: {isolated.sum()} isolated node(s) found")
+    print("Isolated beats:", isolated_beats)
+    print("Consider raising DIST_THRESHOLD_KM or checking centroid data "
+          "for these beats.")
 else:
-    print("✅ No isolated nodes")
+    print("\n✅ No isolated nodes")
 
-print("\n✅ KNN spatial adjacency saved:", OUT_FILE)
+print("\n✅ Threshold spatial adjacency saved:", OUT_FILE)
