@@ -18,7 +18,7 @@ and place them in `data/raw/`:
 %  https://data.cityofchicago.org/Public-Safety/Boundaries-Police-Beats-current-/aerh-rz74
   → save as `data/raw/beats.csv`
 simillarly other NYC data also.
-The crime export must include, at minimum: `Date`, `Beat`, `District`, `NYC`,
+The crime export must include, at minimum: `Date`, `Beat`, `District`, `Precincts`,
 `Latitude`, `Longitude`, `Arrest`.
 
 ## 2. What preprocessing does
