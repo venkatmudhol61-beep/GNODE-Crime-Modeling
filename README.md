@@ -1,8 +1,8 @@
 # Data Preprocessing
 
-This step converts raw City of Chicago crime/arrest records into the
+This step converts raw City of Chicago crime/arrest and NYC-Precincts records into the
 normalized time series and spatial adjacency matrices used by all four
-GNODE variants, at both beat-level (N=274) and district-level (N=24)
+GNODE variants, at  beat-level (N=274), district-level (N=23), and NYC-Precincts
 resolution.
 
 ## 1. Download the raw data
@@ -11,14 +11,14 @@ Download the following two files from the City of Chicago Open Data Portal
 and place them in `data/raw/`:
 
 - **Chicago Crime Data** (incident-level crime records):
-  https://data.cityofchicago.org/Public-Safety/City-of-Chicago-Crime-Data/v9q9-3dm2
+%  https://data.cityofchicago.org/Public-Safety/City-of-Chicago-Crime-Data/v9q9-3dm2
   → save as `data/raw/crimes.csv`
 
 - **Chicago Police Beat Boundaries** (beat boundary shapefiles/reference):
-  https://data.cityofchicago.org/Public-Safety/Boundaries-Police-Beats-current-/aerh-rz74
+%  https://data.cityofchicago.org/Public-Safety/Boundaries-Police-Beats-current-/aerh-rz74
   → save as `data/raw/beats.csv`
-
-The crime export must include, at minimum: `Date`, `Beat`, `District`,
+simillarly other NYC data also.
+The crime export must include, at minimum: `Date`, `Beat`, `District`, `NYC`,
 `Latitude`, `Longitude`, `Arrest`.
 
 ## 2. What preprocessing does
@@ -26,7 +26,7 @@ The crime export must include, at minimum: `Date`, `Beat`, `District`,
 For each spatial resolution (beat and district), the pipeline:
 
 1. **Aggregates incidents into monthly counts** per spatial unit, from
-   `Date` and the `Beat`/`District` column.
+   `Date` and the `Beat`/`District/NYC` column.
 2. **Normalizes counts into [0,1]** by dividing each unit's raw monthly
    count by that unit's historical maximum count observed over the
    training period only (Jan 2001 – Jun 2018), per Eq. (3) of the paper.
@@ -52,8 +52,7 @@ different datasets.
 ## 3. Run preprocessing
 
 ```bash
-python src/beat_data/preprocess_crime.py 
-python src/district_data/preprocess_crime.py 
+python src/data/preprocess_crime.py  
 ```
 
 ## 4. Output files
@@ -94,13 +93,3 @@ python src/train.py
 
 This trains the model using the preprocessed data and saves the trained model and logs.
 
-## Notes / things to verify against your data
-
-- Test-period counts that exceed a unit's training-period maximum are
-  clipped to 1.0, to preserve the `[0,1]` state-space guarantee required
-  by the model (Assumption 2.4).
-- Units with zero incidents in the training period are treated with a
-  historical max of 1.0 to avoid division by zero.
-- Any spatial unit with no neighbours within the 6 km threshold will
-  trigger a warning at preprocessing time — check `data/raw/` for
-  geocoding gaps if this occurs.
